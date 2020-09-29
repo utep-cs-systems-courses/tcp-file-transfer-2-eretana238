@@ -53,6 +53,7 @@ while True:
     elif os.path.exists(args[1]):
         with open(args[1], 'rb') as f:
             packet = f.read()
-            framedSend(s,packet,debug)
-    else:
+            f_name = args[1].split('/')[-1]
+            framedSend(s,f_name,packet,debug)
+    elif not os.path.exists(args[1]):
         os.write(2, "Incorrect args[1].\nFile not found in specified path.\n".encode())
