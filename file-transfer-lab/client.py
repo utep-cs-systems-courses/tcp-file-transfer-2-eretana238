@@ -1,13 +1,12 @@
 #! /usr/bin/env python3
 
 # Echo client program
-import socket, sys, re
+import socket, sys, re, os
 
 sys.path.append("../lib")       # for params
 import params
 
 from framedSock import framedSend, framedReceive
-
 
 switchesVarDefaults = (
     (('-s', '--server'), 'server', "127.0.0.1:50001"),
@@ -23,7 +22,6 @@ server, usage, debug  = paramMap["server"], paramMap["usage"], paramMap["debug"]
 
 if usage:
     params.usage()
-
 
 try:
     serverHost, serverPort = re.split(":", server)
@@ -44,11 +42,17 @@ if s is None:
 
 s.connect(addrPort)
 
-print("sending hello world")
-framedSend(s, b"hello world", debug)
-print("received:", framedReceive(s, debug))
+while True:
+    fd = None
+    commands = os.read(0, 1024).decode()
+    args = re.split('\s', commands)
 
-print("sending hello world")
-framedSend(s, b"hello world", debug)
-print("received:", framedReceive(s, debug))
+    if args[0].lower() != 'put':
+        os.write(2, "Incorrect args[0].\nUsage: put [file_path]\n".encode())
 
+    elif os.path.exists(args[1]):
+        with open(args[1], 'rb') as f:
+            packet = f.read()
+            framedSend(s,packet,debug)
+    else:
+        os.write(2, "Incorrect args[1].\nFile not found in specified path.\n".encode())

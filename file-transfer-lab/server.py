@@ -28,7 +28,6 @@ sock, addr = lsock.accept()
 
 print("connection rec'd from", addr)
 
-
 from framedSock import framedSend, framedReceive
 
 while True:
@@ -36,5 +35,8 @@ while True:
     if debug: print("rec'd: ", payload)
     if not payload:
         break
-    payload += b"!"             # make emphatic!
-    framedSend(sock, payload, debug)
+    binary_format = bytearray(payload)
+    with open('./server/copied_file.txt', 'w+b') as nf:
+        nf.write(binary_format)
+        nf.close()
+
