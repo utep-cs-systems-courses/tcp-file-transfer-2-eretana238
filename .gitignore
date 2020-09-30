@@ -2,4 +2,4 @@
 __pycache__
 
 # server contents
-server/.*
+file-transfer-lab/server

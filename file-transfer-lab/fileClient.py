@@ -43,23 +43,29 @@ if s is None:
 s.connect(addrPort)
 
 while True:
-    fd = None
-    commands = os.read(0, 1024).decode()
-    args = re.split('\s', commands)
-    print(len(args))
+    command = os.read(0, 1024).decode()
+    if command == 'exit' or command == 'quit':
+        sys.exit(1)
+
+    args = re.match('(.*) (.*) (.*)', command)
+
+    if not args:
+        print('Incorrect number of arguments.\nUsage: put [local_name] [remote_name]')
+        continue
+    else:
+        args = args.groups()
 
     if args[0].lower() != 'put':
-        os.write(2, "Incorrect args[0].\nUsage: put [file_path]\n".encode())
+        print('Incorrect args[0].\nUsage: put [local_name] [remote_name]')
         continue
 
     elif not os.path.exists(args[1]):
-        os.write(2, "Incorrect args[1].\nFile not found in specified path.\n".encode())
+        print('Incorrect args[1].\nFile not found in specified path.')
         continue
-
-    if len(args) == 3:
-        pass
-
-    with open(args[1], 'rb') as f:
-            packet = f.read()
-            f_name = args[1].split('/')[-1]
-            framedSend(s,f_name,packet,debug)
+    
+    else:
+        if os.path.getsize(args[1]) == 0:
+            print('Zero byte file blah.\nNo point on transferring')
+        with open(args[1], 'rb') as f:
+            data = f.read()
+            framedSend(s,args[2],data,debug)

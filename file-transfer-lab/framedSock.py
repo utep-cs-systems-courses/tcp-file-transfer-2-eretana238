@@ -1,8 +1,8 @@
 import re
 
-def framedSend(sock, f_name, payload, debug=0):
+def framedSend(sock, remote_name, payload, debug=0):
      if debug: print("framedSend: sending %d byte message" % len(payload))
-     msg = str(len(payload)).encode() + b':' + f_name.encode() + b':' + payload
+     msg = str(len(payload)).encode() + b':' + remote_name.encode() + b':' + payload
      while len(msg):
          nsent = sock.send(msg)
          msg = msg[nsent:]
@@ -17,7 +17,7 @@ def framedReceive(sock, debug=0):
          if state == "getLength":
              match = re.match(b'([^:]+):(.*):(.*)', rbuf, re.DOTALL | re.MULTILINE) # look for header
              if match:
-                  lengthStr, f_name, rbuf = match.groups()
+                  lengthStr, remote_name, rbuf = match.groups()
                   try: 
                        msgLength = int(lengthStr)
                   except:
@@ -29,8 +29,8 @@ def framedReceive(sock, debug=0):
              if len(rbuf) >= msgLength:
                  payload = rbuf[0:msgLength]
                  rbuf = rbuf[msgLength:]
-                 return f_name, payload
-         r = sock.recv(10000)
+                 return remote_name, payload
+         r = sock.recv(100)
          rbuf += r
          if len(r) == 0:
              if len(rbuf) != 0:

@@ -31,12 +31,12 @@ print("connection rec'd from", addr)
 from framedSock import framedSend, framedReceive
 
 while True:
-    f_name, payload = framedReceive(sock, debug)
+    remote_name, payload = framedReceive(sock, debug)
     if debug: print("rec'd: ", payload)
-    if not payload or not f_name:
+    if not payload or not remote_name:
         break
     binary_format = bytearray(payload)
-    with open('./server/'+f_name.decode(), 'w+b') as nf:
+    with open(remote_name, 'w+b') as nf:
+        print('in creating file')
         nf.write(binary_format)
         nf.close()
-
