@@ -46,14 +46,20 @@ while True:
     fd = None
     commands = os.read(0, 1024).decode()
     args = re.split('\s', commands)
+    print(len(args))
 
     if args[0].lower() != 'put':
         os.write(2, "Incorrect args[0].\nUsage: put [file_path]\n".encode())
+        continue
 
-    elif os.path.exists(args[1]):
-        with open(args[1], 'rb') as f:
+    elif not os.path.exists(args[1]):
+        os.write(2, "Incorrect args[1].\nFile not found in specified path.\n".encode())
+        continue
+
+    if len(args) == 3:
+        pass
+
+    with open(args[1], 'rb') as f:
             packet = f.read()
             f_name = args[1].split('/')[-1]
             framedSend(s,f_name,packet,debug)
-    elif not os.path.exists(args[1]):
-        os.write(2, "Incorrect args[1].\nFile not found in specified path.\n".encode())
