@@ -2,7 +2,7 @@
 
 import sys
 sys.path.append("../lib")       # for params
-import re, socket, params
+import re, socket, params, os
 
 switchesVarDefaults = (
     (('-l', '--listenPort') ,'listenPort', 50001),
@@ -24,19 +24,17 @@ lsock.bind(bindAddr)
 lsock.listen(5)
 print("listening on:", bindAddr)
 
-sock, addr = lsock.accept()
-
-print("connection rec'd from", addr)
-
-from framedSock import framedSend, framedReceive
-
 while True:
-    remote_name, payload = framedReceive(sock, debug)
-    if debug: print("rec'd: ", payload)
-    if not payload or not remote_name:
-        break
-    binary_format = bytearray(payload)
-    with open(remote_name, 'w+b') as nf:
-        print('in creating file')
-        nf.write(binary_format)
-        nf.close()
+    sock, addr = lsock.accept()
+    print("connection rec'd from", addr)
+    from framedSock import framedSend, framedReceive
+    if not os.fork():
+        remote_name, payload = framedReceive(sock, debug)
+        if debug: print("rec'd: ", payload)
+        if not payload or not remote_name:
+            break
+        binary_format = bytearray(payload)
+        with open(remote_name, 'w+b') as nf:
+            print('File data in buffer. Now creating file.')
+            nf.write(binary_format)
+            nf.close()
