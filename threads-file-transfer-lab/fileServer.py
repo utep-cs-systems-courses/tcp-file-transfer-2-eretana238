@@ -36,14 +36,20 @@ class Server(Thread):
     def run(self) -> None:
         print("new thread handling connection from", self.addr)
         while True:
-            payload = self.fsock.receive(debug)
+            remote_name, payload = self.fsock.receive(debug)
+            print(remote_name)
             if debug:
                 print("rec'd: ", payload)
-            if not payload:     # done
+            if not payload or not remote_name:     # done
                 if debug:
                     print(f"thread connected to {self.addr} done")
                 self.fsock.close()
                 return          # exit
+            binary_format = bytearray(payload)
+            with open(remote_name.decode(), 'w+b') as nf:
+                print('File data in buffer. Now creating file.')
+                nf.write(binary_format)
+                nf.close()
             # self.fsock.send("Message OK",'None', debug)
             
 while True:

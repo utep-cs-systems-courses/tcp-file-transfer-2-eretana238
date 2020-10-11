@@ -1,23 +1,24 @@
 #! /usr/bin/env python3
 
 # Echo client program
-import socket, sys, re, os
-
+import socket
+import sys
+import re
+import os
+from framedSock import EncapFramedSock
 sys.path.append("../lib")       # for params
 import params
 
-from framedSock import EncapFramedSock
-
 switchesVarDefaults = (
     (('-s', '--server'), 'server', "127.0.0.1:50001"),
-    (('-d', '--debug'), "debug", False), # boolean (set if present)
-    (('-?', '--usage'), "usage", False), # boolean (set if present)
-    )
+    (('-d', '--debug'), "debug", False),  # boolean (set if present)
+    (('-?', '--usage'), "usage", False),  # boolean (set if present)
+)
 
 progname = 'framedClient'
 paramMap = params.parseParams(switchesVarDefaults)
 
-server, usage, debug  = paramMap["server"], paramMap["usage"], paramMap["debug"]
+server, usage, debug = paramMap["server"], paramMap["usage"], paramMap["debug"]
 
 if usage:
     params.usage()
@@ -41,7 +42,7 @@ if sock is None:
 
 sock.connect(addrPort)
 
-fsock = EncapFramedSock((sock,addrPort))
+fsock = EncapFramedSock((sock, addrPort))
 
 while True:
     command = os.read(0, 1024).decode()
@@ -51,7 +52,8 @@ while True:
     args = re.match('(.*) (.*) (.*)', command)
 
     if not args:
-        print('Incorrect number of arguments.\nUsage: put [local_name] [remote_name]')
+        print(
+            'Incorrect number of arguments.\nUsage: put [local_name] [remote_name]')
         continue
     else:
         args = args.groups()
@@ -63,12 +65,11 @@ while True:
     elif not os.path.exists(args[1]):
         print('Incorrect args[1].\nFile not found in specified path.')
         continue
-    
+
     else:
         if os.path.getsize(args[1]) == 0:
             print('Zero byte file blah.\nNo point on transferring')
         with open(args[1], 'rb') as f:
             data = f.read()
-            fsock.send(data,args[2],debug)
-        reply = fsock.receive(debug)[1]
-        print(reply)
+            fsock.send(data, args[2], debug)
+        # remote_name, reply = fsock.receive(debug)

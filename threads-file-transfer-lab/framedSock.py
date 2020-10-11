@@ -26,18 +26,18 @@ class EncapFramedSock:               # a facade
                 match = re.match(b'([^:]+):(.*):(.*)', self.rbuf,
                                 re.DOTALL | re.MULTILINE)  # look for header
                 if match:
-                    lengthStr, remote_name, rbuf = match.groups()
+                    lengthStr, remote_name, self.rbuf = match.groups()
                     try:
                         msgLength = int(lengthStr)
                     except:
-                        if len(rbuf):
+                        if len(self.rbuf):
                             print('badly formed message length:', lengthStr)
                             return None, None
                     state = 'getPayload'
             if state == 'getPayload':
                 if len(self.rbuf) >= msgLength:
                     payload = self.rbuf[0:msgLength]
-                    rbuf = self.rbuf[msgLength:]
+                    self.rbuf = self.rbuf[msgLength:]
                     return remote_name, payload
             r = self.sock.recv(100)
             self.rbuf += r
