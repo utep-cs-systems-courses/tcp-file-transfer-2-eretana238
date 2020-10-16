@@ -3,7 +3,8 @@
 import socket
 import sys
 from threading import Thread
-from framedSock import EncapFramedSock
+from threading import Lock
+from framed_sock import EncapFramedSock
 sys.path.append("../lib")       # for params
 import params
 
@@ -37,7 +38,6 @@ class Server(Thread):
         print("new thread handling connection from", self.addr)
         while True:
             remote_name, payload = self.fsock.receive(debug)
-            print(remote_name)
             if debug:
                 print("rec'd: ", payload)
             if not payload or not remote_name:     # done
@@ -46,11 +46,14 @@ class Server(Thread):
                 self.fsock.close()
                 return          # exit
             binary_format = bytearray(payload)
-            with open(remote_name.decode(), 'w+b') as nf:
-                print('File data in buffer. Now creating file.')
-                nf.write(binary_format)
-                nf.close()
-            # self.fsock.send("Message OK",'None', debug)
+
+            data_lock = Lock()
+            with data_lock:
+                with open(remote_name.decode(), 'w+b') as nf:
+                    print('File data in buffer. Now creating file.')
+                    nf.write(binary_format)
+                    print('File created')
+                # self.fsock.send("Message OK",'None', debug)
             
 while True:
     sockAddr = lsock.accept()

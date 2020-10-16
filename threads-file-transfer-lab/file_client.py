@@ -1,11 +1,10 @@
-#! /usr/bin/env python3
+#! /home/silverlycan/os/tcp-file-transfer-2-eretana238/threads-file-transfer-lab/interpreter.py
 
-# Echo client program
 import socket
 import sys
 import re
 import os
-from framedSock import EncapFramedSock
+from framed_sock import EncapFramedSock
 sys.path.append("../lib")       # for params
 import params
 
