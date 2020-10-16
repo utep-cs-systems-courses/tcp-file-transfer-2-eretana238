@@ -8,7 +8,7 @@ class EncapFramedSock:               # a facade
     def close(self) -> int:
         return self.sock.close()
 
-    def send(self, payload, remote_name = 'None', debug=0) -> None:
+    def framed_send(self, payload, remote_name = 'None', debug=0) -> None:
         if debug:
             print('framedSend: sending %d byte message' % len(payload))
         msg = str(len(payload)).encode() + b':' + \
@@ -17,7 +17,7 @@ class EncapFramedSock:               # a facade
             nsent = self.sock.send(msg)
             msg = msg[nsent:]
 
-    def receive(self, debug=0) -> None:
+    def framed_receive(self, debug=0) -> None:
         state = 'getLength'
         msgLength = -1
         remote_name = ''

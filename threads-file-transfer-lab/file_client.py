@@ -1,5 +1,7 @@
 #! /home/silverlycan/os/tcp-file-transfer-2-eretana238/threads-file-transfer-lab/interpreter.py
 
+# directory location may depend on machine
+
 import socket
 import sys
 import re
@@ -8,67 +10,34 @@ from framed_sock import EncapFramedSock
 sys.path.append("../lib")       # for params
 import params
 
-switchesVarDefaults = (
-    (('-s', '--server'), 'server', "127.0.0.1:50001"),
-    (('-d', '--debug'), "debug", False),  # boolean (set if present)
-    (('-?', '--usage'), "usage", False),  # boolean (set if present)
-)
+class Client():
+    """
+    Represents the client that connects to the server and makes a file transfer
+    """
+    def __init__(self, server = "127.0.0.1:50001", debug = 0) -> None:
+        self.debug = debug
+        try:
+            server_host, server_port = re.split(":", server)
+            server_port = int(server_port)
+        except:
+            print("Can't parse server:port from '%s'" % server)
+            sys.exit(1)
 
-progname = 'framedClient'
-paramMap = params.parseParams(switchesVarDefaults)
+        addr_port = (server_host, server_port)
+        addr_family = socket.AF_INET
+        sock_type = socket.SOCK_STREAM
+        
+        sock = socket.socket(addr_family, sock_type)
+        sock.connect(addr_port)
+        
+        self.fsock = EncapFramedSock((sock, addr_port))
 
-server, usage, debug = paramMap["server"], paramMap["usage"], paramMap["debug"]
-
-if usage:
-    params.usage()
-
-try:
-    serverHost, serverPort = re.split(":", server)
-    serverPort = int(serverPort)
-except:
-    print("Can't parse server:port from '%s'" % server)
-    sys.exit(1)
-
-addrFamily = socket.AF_INET
-socktype = socket.SOCK_STREAM
-addrPort = (serverHost, serverPort)
-
-sock = socket.socket(addrFamily, socktype)
-
-if sock is None:
-    print('could not open socket')
-    sys.exit(1)
-
-sock.connect(addrPort)
-
-fsock = EncapFramedSock((sock, addrPort))
-
-while True:
-    command = os.read(0, 1024).decode()
-    if command == 'exit' or command == 'quit':
-        sys.exit(1)
-
-    args = re.match('(.*) (.*) (.*)', command)
-
-    if not args:
-        print(
-            'Incorrect number of arguments.\nUsage: put [local_name] [remote_name]')
-        continue
-    else:
-        args = args.groups()
-
-    if args[0].lower() != 'put':
-        print('Incorrect args[0].\nUsage: put [local_name] [remote_name]')
-        continue
-
-    elif not os.path.exists(args[1]):
-        print('Incorrect args[1].\nFile not found in specified path.')
-        continue
-
-    else:
-        if os.path.getsize(args[1]) == 0:
+    def send_file(self,local_file, remote_file) -> None:
+        """
+        docstring
+        """
+        if os.path.getsize(local_file) == 0:
             print('Zero byte file blah.\nNo point on transferring')
-        with open(args[1], 'rb') as f:
+        with open(local_file, 'rb') as f:
             data = f.read()
-            fsock.send(data, args[2], debug)
-        # remote_name, reply = fsock.receive(debug)
+            self.fsock.framed_send(data, remote_file, self.debug)
