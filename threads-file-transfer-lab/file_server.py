@@ -1,12 +1,12 @@
 #! /usr/bin/env python3
 
+import params
+from framed_sock import EncapFramedSock
 import socket
 import sys
 from threading import Thread
 from threading import Lock
-from framed_sock import EncapFramedSock
 sys.path.append("../lib")       # for params
-import params
 
 
 switchesVarDefaults = (
@@ -27,6 +27,7 @@ bindAddr = ("127.0.0.1", listenPort)
 lsock.bind(bindAddr)
 lsock.listen(5)
 print("listening on:", bindAddr)
+
 
 class Server(Thread):
     def __init__(self, sockAddr) -> None:
@@ -51,7 +52,8 @@ class Server(Thread):
             with data_lock:
                 with open(remote_name.decode(), 'w+b') as nf:
                     nf.write(binary_format)
-            
+
+
 while True:
     sockAddr = lsock.accept()
     server = Server(sockAddr)
