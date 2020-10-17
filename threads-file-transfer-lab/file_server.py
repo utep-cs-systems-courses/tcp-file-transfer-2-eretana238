@@ -1,12 +1,12 @@
 #! /usr/bin/env python3
 
-import params
 from framed_sock import EncapFramedSock
 import socket
 import sys
 from threading import Thread
 from threading import Lock
 sys.path.append("../lib")       # for params
+import params
 
 
 switchesVarDefaults = (
@@ -39,19 +39,21 @@ class Server(Thread):
         print("new thread handling connection from", self.addr)
         while True:
             remote_name, payload = self.fsock.framed_receive(debug)
-            if debug:
-                print("rec'd: ", payload)
             if not payload or not remote_name:     # done
                 if debug:
                     print(f"thread connected to {self.addr} done")
                 self.fsock.close()
                 return          # exit
+            if debug:
+                print("rec'd: ", len(payload))
             binary_format = bytearray(payload)
 
             data_lock = Lock()
             with data_lock:
                 with open(remote_name.decode(), 'w+b') as nf:
                     nf.write(binary_format)
+                    if debug:
+                        print('Wrote file with %d bytes' % len(payload))
 
 
 while True:
